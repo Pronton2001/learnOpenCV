@@ -1,5 +1,9 @@
 # chapter 2: introduction
 
+Tam Ky city, Quang Nam Province
+
+17-18/06/2021
+
 ## First Program—Display a Picture
 
 ```c
