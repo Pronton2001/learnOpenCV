@@ -2,7 +2,7 @@
 
 Tam Ky city, Quang Nam Province
 
-17-18/06/2021
+17-23/06/2021
 
 ## First Program—Display a Picture
 
@@ -477,7 +477,6 @@ void onTrackbarSlide(int state, void *)
         cv::pyrDown(pyr_frame, pyr_frame);
         cv::pyrDown(pyr_frame, pyr_frame); 
         break;
-
     default:
         break;
     }
