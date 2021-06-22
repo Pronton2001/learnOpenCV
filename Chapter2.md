@@ -7,6 +7,7 @@ Tam Ky city, Quang Nam Province
 ## First Program—Display a Picture
 
 ```c
+// Example 2-2: Same as Example 2-1 but employing the “using namespace” directive. For faster compile, we use only the needed header file, not the generic opencv.hpp
 #include <opencv2/highgui/highgui.hpp>
 int main(int argc, char **argv)
 {
@@ -33,6 +34,7 @@ and deallocate any associated memory usage. This avoids memory leaks when work w
 ## Second Program—Video
 
 ```c
+// Example 2-3: A simple OpenCV program for playing a video file from disk. In this example we only use specific module headers, rather than just opencv.hpp. This speeds up compilation, and so is sometimes preferable.
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 int main( int argc, char** argv ) { 
@@ -60,6 +62,7 @@ int main( int argc, char** argv ) {
 ## Moving Around
 
 ```c
+// Example 2-4: Program to add a trackbar slider to the basic viewer window for moving around within the video file
 #include "opencv2/highgui/highgui.hpp"
 #include "opencv2/imgproc/imgproc.hpp"
 #include <iostream>
@@ -130,6 +133,7 @@ int main(int argc, char **argv)
 ## A Simple Transformation
 
 ```c
+// Example 2-5: Loading and then smoothing an image before it is displayed on the screen
 #include <opencv2/opencv.hpp>
 void example2_5(cv::Mat &image)
 {
@@ -171,6 +175,8 @@ int main(int argc, char** argv){
 ### Gaussian blur
 
 ```c
+// Example 2-6: Using cv::pyrDown() to create a new image that is half the width and height of the input 
+image
 #include <opencv2/opencv.hpp>
 int main(int argc, char **argv)
 {
@@ -196,6 +202,7 @@ Some name keep in mind:
 ### Canny edge detector
 
 ```c
+// Example 2-7: The Canny edge detector writes its output to a single-channel (grayscale) image
 #include <opencv2/opencv.hpp>
 int main(int argc, char **argv)
 {
@@ -216,6 +223,8 @@ int main(int argc, char **argv)
 ### Getting and setting pixels
 
 ```c
+// Example 2-8: Combining the pyramid down operator (twice) and the Canny subroutine in a simple image pipeline
+// Example 2-9: Getting and setting pixels in Example 2-8
 #include <opencv2/opencv.hpp>
 int main(int argc, char **argv)
 {
@@ -305,18 +314,23 @@ int main(int argc, char *argv[])
     cv::VideoCapture capture;
     capture.open(0);
 
-
-    double fps = capture.get(cv::CAP_PROP_FPS);
-    cv::Size size(
-        (int)capture.get(cv::CAP_PROP_FRAME_WIDTH),
-        (int)capture.get(cv::CAP_PROP_FRAME_HEIGHT));
+    // cv::Size size(
+    //     (int)capture.get(cv::CAP_PROP_FRAME_WIDTH),
+    //     (int)capture.get(cv::CAP_PROP_FRAME_HEIGHT));
+    // double fps = capture.get(cv::CAP_PROP_FPS);
+    cv::Mat logpolar_frame(cv::Size(1280, 720), CV_8UC3), bgr_frame;
+    capture >> bgr_frame;
 
     cv::VideoWriter writer;
-    writer.open(argv[1], cv::VideoWriter::fourcc('M', 'J', 'P', 'G'), fps, size);
-    cv::Mat logpolar_frame(size, CV_8UC3), bgr_frame;
+    std::string filename = "./live2.avi";
+    int codec = cv::VideoWriter::fourcc('M', 'J', 'P', 'G');  // select desired codec (must be available at runtime)
+    double fps = 25.0;
+    // printf("size:(%d, %d)\n", _size.width, _size.height); // why zero
+    writer.open(filename, codec, fps, bgr_frame.size()); // why Size(1280, 720) wrong
     for (;;)
     {
         capture >> bgr_frame;
+        // printf("size:(%d, %d)\n", bgr_frame.size().width, bgr_frame.size().height);
         if (bgr_frame.empty()){
             printf("done\n");
             break; // end if done
@@ -342,6 +356,7 @@ int main(int argc, char *argv[])
     capture.release();
     char c = cv::waitKey(0);
 }
+
 ```
 
 * Video codec: to compress and decompress a video to a file and vice versa. The popular ones is MJPG (Motion Jpeg),  
@@ -364,8 +379,155 @@ int main(int argc, char *argv[])
 
 Check out ../sample/cpp!
 
-1. Build the sample in ../opencv/samples/
-2. Go to  ../opencv/samples/ and look for *lkdemo.c*. Attach a camera to your system. 'r': initalize; 'n': toggle between 'night' and 'day' views.
-3. Combine Ex2-11 and Ex2-6 to donwsample video capturing from camera.
-4. Same above with Ex3.
-5. Modify Ex4 with a slider control from Ex2-4 so that user can dynamically vary the pyramid downsampling reduction level by factors of between 2 and 8. (skip writing the disk, but you should display the results)
+- [x] Build the sample in ../opencv/samples/
+- [x] Go to  ../opencv/samples/ and look for *lkdemo.c*. Attach a camera to your system. 'r': initalize; 'n': toggle between 'night' and 'day' views.
+- [x] Combine Ex2-11 and Ex2-6 to donwsample video capturing from camera.
+
+```c
+// Exercise 3
+#include <opencv2/opencv.hpp>
+
+#include <iostream>
+
+int main(int argc, char *argv[])
+{
+    cv::namedWindow("Exercise 3", cv::WINDOW_AUTOSIZE);
+    cv::namedWindow("Pyramid_Down", cv::WINDOW_AUTOSIZE);
+
+    cv::VideoCapture capture;
+    capture.open(0);
+
+    cv::Mat pyr_frame, bgr_frame;
+    capture >> bgr_frame;
+    cv::pyrDown(bgr_frame, pyr_frame);
+    cv::VideoWriter writer;
+    std::string filename = "./live3.avi";
+    int codec = cv::VideoWriter::fourcc('M', 'J', 'P', 'G'); // select desired codec (must be available at runtime)
+    double fps = 25.0;
+    cv::Size _size = bgr_frame.size();
+    printf("size:(%d, %d)\n", _size.width, _size.height); // why zero
+    writer.open(filename, codec, fps, pyr_frame.size()); // why Size(1280, 720) wrong
+    for (;;)
+    {
+        capture >> bgr_frame;
+        printf("size:(%d, %d)\n", bgr_frame.size().width, bgr_frame.size().height);
+        if (bgr_frame.empty())
+            break; // end if done
+
+        cv::imshow("Exercise 3", bgr_frame);
+        cv::pyrDown(
+            bgr_frame,              // Input color frame
+            pyr_frame         // Output log-polar frame
+        );
+        cv::imshow("Pyramid_Down", pyr_frame);
+        writer << pyr_frame;
+        char c = cv::waitKey(10);
+        if (c == 27)
+            break; // allow the user to break out
+    }
+    capture.release();
+    char c = cv::waitKey(0);
+}
+
+```
+- [x] Modify the above code with Ex2-2.
+
+- [x] Modify the above code with a slider control from Ex2-4 so that user can dynamically vary the pyramid downsampling reduction level by factors of between 2 and 8. (skip writing the disk, but you should display the results)
+```c
+// Exercise 5
+#include "opencv2/highgui/highgui.hpp"
+#include "opencv2/imgproc/imgproc.hpp"
+#include <opencv2/opencv.hpp>
+
+#include <iostream>
+#include <fstream>
+
+using namespace std;
+enum state
+{
+    py0 = 0,
+    py2 = 1,
+    py4 = 2,
+    py8 = 3
+};
+int g_slider_state = -1; // keep the trackbar slider position state.
+int g_state = py0;
+
+cv::Mat bgr_frame, pyr_frame;
+
+void onTrackbarSlide(int state, void *)
+{
+    switch (state)
+    {
+    case py0:
+        cv::imshow("Ex5", bgr_frame);
+        g_writer << bgr_frame;
+        return;
+    case py2:
+        cv::pyrDown(bgr_frame, pyr_frame);
+        break;
+    case py4:
+        cv::pyrDown(bgr_frame, pyr_frame);
+        cv::pyrDown(pyr_frame, pyr_frame);
+        printf("py4\n");
+        break;
+    case py8:
+        printf("py8\n");
+        cv::pyrDown(bgr_frame, pyr_frame);
+        cv::pyrDown(pyr_frame, pyr_frame);
+        cv::pyrDown(pyr_frame, pyr_frame); 
+        break;
+
+    default:
+        break;
+    }
+    cv::imshow("Ex5", pyr_frame);
+    g_writer << pyr_frame;
+}
+int main(int argc, char *argv[])
+{
+    cv::namedWindow("Ex5", cv::WINDOW_AUTOSIZE);
+
+    cv::VideoCapture capture;
+    capture.open(0);
+    cv::createTrackbar("Pyramid level", "Ex5", &g_slider_state, 3,
+                       onTrackbarSlide); // [0..3]: num_states
+                                         // trigger CallBack Function `onTrackbarSlide`
+                                         // when g_state != g_slider_state
+
+    capture >> bgr_frame;
+    cv::pyrDown(bgr_frame, pyr_frame);
+    std::string filename = "./live3.avi";
+    for (;;)
+    {
+        capture >> bgr_frame;
+        if (!bgr_frame.data)
+        {
+            break;
+        }
+        cv::setTrackbarPos("Pyramid level", "Ex5", g_state);
+
+        char c = (char)cv::waitKey(10);
+        if (c == '0')
+        {
+            g_state = py0;
+        }
+        if (c == '1')
+        {
+            g_state = py2;
+        }
+        if (c == '2')
+        {
+            g_state = py4;
+        }
+        if (c == '3')
+        {
+            g_state = py8;
+        }
+        if (c == 27)
+            break;
+    }
+    char c = cv::waitKey(0);
+}
+
+```
