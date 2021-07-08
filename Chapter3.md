@@ -155,7 +155,7 @@ like `points, rectangles, sizes, and the like`.
 
 * Types of array: `cv::{U8,S16,U16,S32,F32,F64}C{1,2,3}.`For example, cv::F32C3 would imply a 32-bit floating-point three-channel array.
 
-```c
+```c++
 cv::Mat m;
 m.create( 3, 10, cv::F32C3 ); // 3 rows, 10 columns of 3-channel 32-bit floats
 m.setTo( cv::Scalar( 1.0f, 0.0f, 1.0f ) ); // 1st channel is 1.0, 2nd 0.0, 3rd 1.0
@@ -163,7 +163,7 @@ m.setTo( cv::Scalar( 1.0f, 0.0f, 1.0f ) ); // 1st channel is 1.0, 2nd 0.0, 3rd 1
 
 is equivalent to:
 
-```c
+```c++
 cv::Mat m( 3, 10, cv::F32C3, cv::Scalar( 1.0f, 0.0f, 1.0f ) )
 ```
 
@@ -174,20 +174,20 @@ cv::Mat m( 3, 10, cv::F32C3, cv::Scalar( 1.0f, 0.0f, 1.0f ) )
 * use `at<>()`
 * a more sophisticated type:
 
-```c
+```c++
 cv::Mat m = cv::Mat::eye( 10, 10, cv::DataType<cv::Complexf>::type );
 printf(
-“Element (3,3) is %f + i%f\n”, 
-m.at<cv::Complexf>(3,3).re, 
-m.at<cv::Complexf>(3,3).im, 
+   “Element (3,3) is %f + i%f\n”, 
+   m.at<cv::Complexf>(3,3).re, 
+   m.at<cv::Complexf>(3,3).im, 
 )
 ```
 
-* use pointer `ptr<>` (fatest way). For example, if the array type is F32C3 , `mtx.ptr<Vec3f>(3)` return  pointer to the first channel of the fisrt element in row `3` of `mtx`.
+* use pointer `ptr<>` (fatest way). For example, if the array type is F32C3 , `mtx.ptr<Vec3f>(3)` return pointer to the first channel of the fisrt element in row `3` of `mtx`.
 
 * use iterators : `cv::MatIterator<>`, `cv::MatConstIterator<>`
 
-```c
+```c++
 int sz[3] = { 4, 4, 4 };
 cv::Mat m( 3, sz, cv::F32C3 ); // A three-dimensional array of size 4-by-4-by-4
 cv::randu( m, -1.0f, 1.0f ); // fill with random numbers from -1.0 to 1.0 
@@ -213,7 +213,7 @@ iterated over be of the same geometry (dims & extents in each dim)
 
 `Do not need to check for discontinuities inside chunks (planes)`
 
-```c
+```c++
 const int n_mat_size = 5;
 const int n_mat_sz[] = { n_mat_size, n_mat_size, n_mat_size };
 cv::Mat n_mat( 3, n_mat_sz, cv::F32C1 ); // 3 rows, n_mat_sz(=5) columns, 1 chanel with type float 32-bit
@@ -241,37 +241,31 @@ for (int p = 0; p < it.nplanes; p++, ++it) {
 
 * Another example in which 2 arrays will sum over:
 
-```c
-#include <opencv2/opencv.hpp>
-#include <iostream>
-using namespace std;
-int main()
-{
-	const int n_mat_size = 5;
-	const int n_mat_sz[] = {n_mat_size, n_mat_size, n_mat_size};
-	cv::Mat n_mat0(3, n_mat_sz, CV_32FC1); //3 dims : 5x5x5, 1 channel-32bit
-	cv::Mat n_mat1(3, n_mat_sz, CV_32FC1);
-	cv::RNG rng;
-	rng.fill(n_mat0, cv::RNG::UNIFORM, 0.f, 1.f);
-	rng.fill(n_mat1, cv::RNG::UNIFORM, 0.f, 1.f);
+```c++
+const int n_mat_size = 5;
+const int n_mat_sz[] = {n_mat_size, n_mat_size, n_mat_size};
+cv::Mat n_mat0(3, n_mat_sz, CV_32FC1); //3 dims : 5x5x5, 1 channel-32bit
+cv::Mat n_mat1(3, n_mat_sz, CV_32FC1);
+cv::RNG rng;
+rng.fill(n_mat0, cv::RNG::UNIFORM, 0.f, 1.f);
+rng.fill(n_mat1, cv::RNG::UNIFORM, 0.f, 1.f);
 
-	const cv::Mat *arrays[] = {&n_mat0, &n_mat1, 0};
-	cv::Mat my_planes[2];
-	cv::NAryMatIterator it(arrays, my_planes);
-	float s = 0.f; // Total sum over all planes in both arrays
-	int n = 0;	   // Total number of planes
-	cout << "number:" << it.nplanes << '\n';
-	for (int p = 0; p < it.nplanes; p++, ++it)
-	{
-		cout << "element:" << it.planes[0] << "\n";
-		cout << "sum1:" << sum(it.planes[0]) << '\n';
-		cout << "sum2:" << sum(it.planes[1]) << '\n';
-		s += cv::sum(it.planes[0])[0];
-		s += cv::sum(it.planes[1])[0];
-		n++;
-	}
-	cout << "Sum:" << s;
+const cv::Mat *arrays[] = {&n_mat0, &n_mat1, 0};
+cv::Mat my_planes[2];
+cv::NAryMatIterator it(arrays, my_planes);
+float s = 0.f; // Total sum over all planes in both arrays
+int n = 0;	   // Total number of planes
+cout << "number:" << it.nplanes << '\n';
+for (int p = 0; p < it.nplanes; p++, ++it)
+{
+   cout << "element:" << it.planes[0] << "\n";
+   cout << "sum1:" << sum(it.planes[0]) << '\n';
+   cout << "sum2:" << sum(it.planes[1]) << '\n';
+   s += cv::sum(it.planes[0])[0];
+   s += cv::sum(it.planes[1])[0];
+   n++;
 }
+cout << "Sum:" << s;
 ```
 
 * Result
@@ -622,6 +616,181 @@ condition in the program. Build the code in debug, run it and see the assert bei
 it in release mode and see that the condition is not triggered
 8. Create a mask using cv::compare(). Load a real image. Use cv::split() to split the image 
 into red, green, and blue images.
+   1. Find and display the green image
+   2. Clone this green plane image twice (call these clone1 and clone2).
+   3. Find the green plane’s minimum and maximum value
+   4. Set clone1’s values to thresh = (unsigned char)((maximum - minimum)/2.0).
+   5. Set clone2 to 0 and use cv::compare(green_image, clone1, clone2, 
+cv::CMP_GE). Now clone2 will have a mask of where the value exceeds thresh in the green 
+image.
+   6. Finally, compute the value: green_image = green_image - thresh/2 and display the 
+results. (Bonus: assign this value to green_image only where clone2 is non-zero.)
+
+## Solution
+
+### 1. Open […/opencv/modules/core/include/opencv2/core/core.hpp]. Find helper functions:
+
+1. Choose a negative floating-point number. Take its absolute value, round it, and then take its ceiling and floor.
+2. Generate some random number
+3. Create a floating-point cv::Point2f and convert it to an integer cv::Point2i
+4. Convert a cv::Point2i to a CvPoint2f. 
+
+Object functions and objects: 
+
+* class CV_EXPORTS Exception : public std::exception
+* enum ReduceTypes 
+* enum KmeansFlags
+* void add, multiply, subtract, divide, ...
+* class CV_EXPORTS PCA
+* class CV_EXPORTS RNG
+
+```cpp
+/* Exercise 3-1.
+? 1. Choose a negative floating-point number. Take its absolute value, round it, and then take its ceiling and floor.
+? 2. Generate some random number
+? 3. Create a floating-point cv::Point2f and convert it to an integer cv::Point2i
+? 4. Convert a cv::Point2i to a CvPoint2f.
+*/
+#include <opencv2/core/core.hpp>
+#include <iostream>
+
+using namespace std;
+
+int main(int argc, char **argv)
+{
+	float n_neg = -3.4f;
+	float n_abs = cv::abs(n_neg);
+
+	int n_round = cvRound(n_abs);
+	int n_ceil = cvCeil(n_abs);
+	int n_floor = cvFloor(n_abs);
+
+	cout << n_neg << ' ' << n_abs << ' ' << n_round << ' ' << n_ceil << ' ' << n_floor << '\n';
+
+	float n_ran = cv::theRNG().uniform(2.f, 5.f);
+	float n_ran2 = cv::theRNG();
+	cv::RNG n_ran3 = cv::RNG(4);
+	cout << "Random:" << n_ran << '\n';
+	cout << "Cooler random generator: \n";
+	cout << "A: " << int(n_ran2) << '\n';
+	cout << "A: " << (int)n_ran2 << '\n';
+	cout << "a: " << (float)n_ran2 << '\n';
+	cout << "a: " << float(n_ran2) << '\n';
+	cout << "A: " << int(n_ran3) << '\n';
+	cout << "B: " << (int)n_ran3 << '\n';
+	cout << "C: " << (float)n_ran3 << '\n';
+	cout << "D: " << float(n_ran3) << '\n';
+
+	cv::Point2f p_float = cv::Point2f(1.2f, 2.6f);
+	cv::Point2i p_int1 = cv::Point2i(p_float); //* constructor
+	cv::Point2i p_int2 = (cv::Point2i)p_float; //* casting
+	cout << "Point:" << p_int1.x << ',' << p_int1.y << '\n';
+	cout << "Point:" << p_int2.x << ',' << p_int2.y << '\n';
+	return 0;
+}
+```
+
+### 2. This exercise will accustom you to the idea of many functions taking matrix types. Create a two dimensional matrix with three channels of type byte with data size 100-by-100. Set all the values to 0.
+
+1. Draw a circle in the matrix using the cv::circle() function:
+
+   ```c++
+   void circle( 
+   cv::Mat& img, // Image to be drawn on
+   cv::Point center, // Location of circle center
+   int radius, // Radius of circle
+   const cv::Scalar& color, // Color, RGB form
+   int thickness = 1, // Thickness of line 
+   int lineType = 8, // Connectedness, 4 or 8
+   int shift = 0 // Bits of radius to treat as fraction
+   );
+   ```
+
+2. Display this image using methods described in Chapter 2.
+
+```c++
+int mat_size[] = {100, 100};
+
+cv::Mat mat = cv::Mat(2, mat_size, CV_8UC3, cv::Scalar(0,0,0));
+
+// ? Another way to initialize cv::Mat
+// auto type = cv::traits::Type<cv::Vec<uchar, 3>>::value;
+// cv::Mat mat = cv::Mat(2, mat_size, type);
+// mat.setTo(cv::Scalar(0.0f, 0.0f, 0.0f));
+
+// 1. Draw a circle in the matrix using the cv::circle() function:
+cv::circle(mat, cv::Point2i(50, 50), 10, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
+
+cv::imshow("Mat Circle", mat);
+//2. Display this image using methods described in Chapter 2.
+assert(argc == 2);
+cv::Mat src = cv::imread(argv[1], cv::IMREAD_COLOR);
+if (src.empty())
+{
+   printf(" Error opening image\n");
+   printf(" Program Arguments: [image_name -- default %s] \n", argv[1]);
+   return EXIT_FAILURE;
+}
+cv::circle(src, cv::Point2i(src.cols / 2, src.rows / 2), 10, cv::Scalar(0, 255, 0), 1, cv::LINE_AA);
+cv::imshow("Image Circle", src);
+
+cv::waitKey();
+
+return 0;
+```
+
+### 3. Create a two-dimensional matrix with three channels of type byte with data size 100-by-100, and set all the values to 0. Use the element access member: m.at<cv::Vec3f> to point to the middle (“green”) channel. Draw a green rectangle between (20, 5) and (40, 20).
+
+```c++
+int mat_size[] = {100, 100};
+
+cv::Mat m= cv::Mat(2, mat_size, CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
+
+// * Use for loop to draw individual point
+for (int i=20; i<=40; i++){
+   for (int j=5; j<=20; j++){
+      m.at<cv::Vec3f>(i,j) = 1.0f;
+   }
+}
+// * Use cv::Mat::setTo(src,mask) [Not work]
+// m.setTo(cv::Scalar(0.0,1.0,0.0),m(cv::Rect(0,0,0,0)));
+// * Use draw function
+// cv::rectangle(m,cv::Rect(20,5,20,15),cv::Scalar(0.0,1.0,0.0),1,cv::LINE_AA);
+cv::imshow("Rectangle", m);
+cv::waitKey();
+```
+
+### 4. Create a three-channel RGB image of size 100-by-100. Clear it. Use pointer arithmetic to draw a green square between (20, 5) and (40, 20).
+
+```c++
+int mat_size[] = {100, 100};
+
+cv::Mat m = cv::Mat(2, mat_size, CV_32FC3, cv::Scalar(0.0f, 0.0f, 0.0f));
+
+for (int r =5; r <= 20; r++ )
+{
+   cv::Vec3f* ptr = m.ptr<cv::Vec3f>(r);
+   for (int c = 20; c <= 40; c++)
+   {
+      ptr[c] = cv::Vec3f(0,1,0);
+   }
+}
+cv::imshow("Rectangle", m);
+cv::waitKey();
+```
+
+### 5. Practice using the block access methods (Table 3-16). Create a 210-by-210 single-channel byte image and zero it. Within the image, build a pyramid of increasing values using the submatrix constructor and the cv::Range object. That is: the outer border should be 0, the next inner border should be 20, the next inner border should be 40, and so on until the final innermost square is set to value 200; all borders should be 10 pixels wide. Display the image.
+
+```c++
+
+```
+
+### 6. Use multiple image objects for one image. Load an image that is at least 100-by-100. Create two additional image objects using the first object and the submatrix constructor. Create the new images with width at 20 and the height at 30, but with their origins located at pixel at (5, 10) and (50, 60), respectively. Logically invert the two images using the ‘not’ logical inversion operator. Display the loaded image, which should have two inverted rectangles within the larger image.
+
+### 7. Add an CV_DbgAssert( condition ) to the code of question 4 that will be triggered by a condition in the program. Build the code in debug, run it and see the assert being triggered. Now build it in release mode and see that the condition is not triggered
+
+### 8. Create a mask using cv::compare(). Load a real image. Use cv::split() to split the image into red, green, and blue images.
+
    1. Find and display the green image
    2. Clone this green plane image twice (call these clone1 and clone2).
    3. Find the green plane’s minimum and maximum value
